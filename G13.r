@@ -64,6 +64,17 @@ train <- function(nn, inp, k, eta=0.1, mb=10, nstep=10000){
 # where the test data consists of every 5th row of the iris dataset, starting from row 5
 # set the seed to provide an example in which training has worked and the loss has been substantially reduced from pre- to post-training
 #
+library(datasets)
+data(iris) 
+
+# Divide the iris data into training and testing data
+list = seq(5, nrow(iris), by = 5)
+test_data = iris[list, ]
+train_data = iris[-list,]
+
+
+
+
 
 
 # compute the misclassification rate (i.e. the proportion misclassified) for the test set.
