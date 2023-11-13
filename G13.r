@@ -21,52 +21,41 @@ netup <- function(d){
   #       Initialize the elements with U (0, 0.2) random deviates.
   
   # Initialize the nodes, weights, and offset vector
-  h = vector("list", length = length(d))
-  W = vector("list", length = length(d) - 1)
-  b = vector("list", length = length(d) - 1)
+  h <- vector("list", length = length(d))
+  W <- vector("list", length = length(d) - 1)
+  b <- vector("list", length = length(d) - 1)
   
   for (l in 1:length(d)) {
-    nn$h[[l]] = rep(0, d[l])
+    h[[l]] <- rep(0, d[l])
   }
   
   # Initialize the elements with U (0, 0.2) random deviates
   for (l in 1:(length(d) - 1)) {
-    W[[l]] = matrix(runif(d[l] * d[l + 1], 0, 0.2), nrow = d[l], ncol = d[l + 1])
-    b[[l]] = runif(d[l + 1], 0, 0.2)
+    W[[l]] <- matrix(runif(d[l] * d[l + 1], 0, 0.2), nrow = d[l], ncol = d[l + 1])
+    b[[l]] <- runif(d[l + 1], 0, 0.2)
   }
   
-  nn = list()
-  nn$h = h
-  nn$W = W
-  nn$b = b
-  
+  nn <- list(h=h, W=W, b=b)
   return (nn)
 }
 
+# ReLU activation function
+relu <- function(x) {
+  return(pmax(0, x))
+}
+
 forward <- function(nn, inp){
-  # forward should compute the remaining node values implied by inp, and return the updated network list 
+  # This function computes the remaining node values implied by inp, and return the updated network list 
   # Input:
   #   nn is a network list as returned by netup
   #   inp a vector of input values for the first layer. 
   # Output:
   #   return the updated network list (as the only return object).
-
-  nn$h[[1]] = inp
-  for (l in 1:(length(nn$h)-1)){
-    #########WRONG#########################################
-    z = nn$W[[l]] %*% nn$h[[l]] + nn$b[[l]]
-    h_l = matrix(0, nrow = nrow(z), ncol = ncol(z))
-                 
-    for (i in 1:nrow(z)){
-      for (j in 1:ncol(z)){
-        if (z[i, j] > 0){
-          h_l[i, j] = z[i, j]
-        } else{
-          h_l[i, j] = 0
-        }
-      }
-    }
-    nn$h[[l]] = h_l
+  nn$h[[1]] <- inp
+  # Perform the forward pass through the network
+  for (l in 2:length(nn$h)) {
+    # Compute the weighted sum of inputs and apply ReLU activation function
+    nn$h[[l]] <- relu(nn$h[[l - 1]] %*% nn$W[[l - 1]] + nn$b[[l - 1]])
   }
   return (nn)
 }
@@ -104,10 +93,12 @@ train <- function(nn, inp, k, eta=0.1, mb=10, nstep=10000){
 library(datasets)
 data(iris) 
 
+iris_matrix <- as.matrix(iris)
+
 # Divide the iris data into training and testing data
-list = seq(5, nrow(iris), by = 5)
-test_data = iris[list, ]
-train_data = iris[-list,]
+list <- seq(5, nrow(iris), by = 5)
+test_data <- iris[list, ]
+train_data <- iris[-list,]
 
 inp = as.matrix(test_data[, 1:4])
 k = as.integer(test_data[, 5])
