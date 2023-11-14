@@ -112,7 +112,7 @@ backward <- function(nn, k) {
 }
 
 
-train <- function(nn, inp, k, eta=0.1, mb=10, nstep=10000){
+train <- function(nn, inp, k, eta = 0.01, mb = 10, nstep = 10000) {
   # This function is used to train the network
   # Input:
   #   nn: the network
@@ -121,6 +121,49 @@ train <- function(nn, inp, k, eta=0.1, mb=10, nstep=10000){
   #   eta: the step size η 
   #   mb: the number of data to randomly sample to compute the gradient. 
   #   nstep: the number of optimization steps to take.
+  
+
+  for (step in 1:nstep) {
+    # Sample a minibatch
+    idx <- sample(1:nrow(inp), mb, replace = TRUE)
+    X_mb <- inp[idx, ]
+    K_mb <- k[idx]
+    
+    # Initialize gradients
+    gradients_W <- 
+    gradients_b <- 
+    
+    # Accumulate gradients over the minibatch
+    for (i in 1:mb) {
+      # Forward pass
+      nn <- forward(nn, X_mb[i, ])
+      
+      # Backward pass
+      nn <- backward(nn, K_mb[i])
+      
+      # Accumulate gradients
+      for (l in 1:length(nn$W)) {
+        gradients_W[[l]] <- gradients_W[[l]] + nn$dW[[l]]
+        gradients_b[[l]] <- gradients_b[[l]] + nn$db[[l]]
+      }
+    }
+    
+    # Update weights and biases
+    for (l in 1:length(nn$W)) {
+      
+    }
+    
+    # print out the loss to monitor training every few steps
+    if (step %% 1000 == 0) {
+      
+    }
+  }
+  
+  return(nn)
+}
+  
+
+  
 
   
 }
