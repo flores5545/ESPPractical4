@@ -193,8 +193,8 @@ list <- seq(5, nrow(iris), by = 5)
 test_data <- iris[list, ]
 train_data <- iris[-list,]
 
-inp = as.matrix(test_data[, 1:4])
-k = as.integer(test_data[, 5])
+inp = as.matrix(train_data[, 1:4])
+k = as.integer(train_data[, 5])
 
 
 
