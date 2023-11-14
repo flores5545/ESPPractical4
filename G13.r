@@ -199,8 +199,14 @@ k = as.integer(test_data[, 5])
 
 
 # After training write code to classify the test data to species according to the class predicted as most probable for each iris in the test set
-
 # compute the misclassification rate (i.e. the proportion misclassified) for the test set.
+nn = netup(d)
+train = train(nn, inp, k)
+predicted_class = predict(train, test_data[, 1:4])
+
+misclassification_rate = sum(predicted_class != iris_test[, 5])/length(test_data[, 5])
+cat("Misclassification Rate:", misclassification_rate)
+
 
 
 
