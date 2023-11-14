@@ -60,6 +60,7 @@ forward <- function(nn, inp){
   return (nn)
 }
 
+
 backward <- function(nn, k) {
   # This function computes the derivatives of the loss corresponding to output class k for network nn (returned from forward)
   # Input:
@@ -91,16 +92,15 @@ backward <- function(nn, k) {
   for (l in seq(n_layers - 1, 1, by = -1)) {
     # Compute gradients for biases directly from dh of the next layer
     db[[l]] <- dh[[l + 1]]
+    db[[l]][nn$h[[l]] <= 0] <- 0  # Applying ReLU derivative
     
     # Compute gradients for weights as the outer product of dh and the activations from the current layer
     dW[[l]] <- nn$h[[l]] %*% t(dh[[l + 1]])
-    
-    # Calculate dh for the previous layer, if not at the first layer
-    if (l > 1) {
-      # Update dh for the previous layer using the chain rule
-      dh[[l]] <- nn$W[[l - 1]] %*% dh[[l + 1]]
-      dh[[l]][nn$h[[l]] <= 0] <- 0  # Applying ReLU derivative
-    }
+    dW[[l]][nn$h[[l]] <= 0] <- 0  # Applying ReLU derivative
+
+    # Update dh for the previous layer using the chain rule
+    dh[[l]] <- t(nn$W[[l]]) %*% dh[[l + 1]]
+    dh[[l]][nn$h[[l]] <= 0] <- 0  # Applying ReLU derivative
   }
   
   # Store the gradients in the network list
