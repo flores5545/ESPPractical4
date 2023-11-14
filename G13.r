@@ -61,6 +61,14 @@ forward <- function(nn, inp){
 }
 
 backward <- function(nn, k) {
+  # This function computes the derivatives of the loss corresponding to output class k for network nn (returned from forward)
+  # Input:
+  #   nn: network, returned from forward
+  #   k: output class
+  # Output:
+  #   A list of updated list including:
+  #     dh, dW and db, which are the derivatives w.r.t the nodes, weights and offsets, respectively
+  
   # Number of layers
   n_layers <- length(nn$h)
   
@@ -89,8 +97,9 @@ backward <- function(nn, k) {
     
     # Calculate dh for the previous layer, if not at the first layer
     if (l > 1) {
-      dh[[l]] = 
-      ## should be something here  MISSING CODE HERE !!!
+      # Update dh for the previous layer using the chain rule
+      dh[[l]] <- nn$W[[l - 1]] %*% dh[[l + 1]]
+      dh[[l]][nn$h[[l]] <= 0] <- 0  # Applying ReLU derivative
     }
   }
   
