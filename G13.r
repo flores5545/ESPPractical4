@@ -130,8 +130,18 @@ train <- function(nn, inp, k, eta = 0.01, mb = 10, nstep = 10000) {
     K_mb <- k[idx]
     
     # Initialize gradients
-    gradients_W <- 
-    gradients_b <- 
+    gradients_W <- vector("list", length = length(nn$W))
+    gradients_b <- vector("list", length = length(nn$b))
+    
+    # Loop over each layer to initialize gradients
+    for (l in 1:length(gradients_W)) {
+      gradients_W[[l]] <- matrix(0, nrow = nrow(nn$W[[l]]), ncol = ncol(nn$W[[l]]))
+    }
+    
+    for (l in 1:length(gradients_b)) {
+      gradients_b[[l]] <- matrix(0, nrow = length(nn$b[[l]]), ncol = 1)
+    }
+
     
     # Accumulate gradients over the minibatch
     for (i in 1:mb) {
