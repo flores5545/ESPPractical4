@@ -60,17 +60,48 @@ forward <- function(nn, inp){
   return (nn)
 }
 
-backward <- function(nn, k){
-  # This function computes the derivatives of the loss corresponding to output class k for network nn (returned from forward)
-  # Input:
-  #   nn: network, returned from forward
-  #   k: output class
-  # Output:
-  #   A list of updated list including:
-  #     dh, dW and db, which are the derivatives w.r.t the nodes, weights and offsets, respectively
-
+backward <- function(nn, k) {
+  # Number of layers
+  n_layers <- length(nn$h)
   
+  # Compute the probabilities for the last layer
+  logits <- nn$h[[n_layers]]
+  exp_logits <- exp(logits)
+  sum_exp_logits <- sum(exp_logits)
+  probabilities <- exp_logits / sum_exp_logits
+  
+  # Initialize dh for the last layer L
+  dh <- vector("list", length = n_layers)
+  dh[[n_layers]] <- probabilities
+  dh[[n_layers]][k] <- dh[[n_layers]][k] - 1  # Subtract 1 only from the true class k
+  
+  # Initialize storage for gradients of weights and biases
+  dW <- vector("list", length = n_layers - 1)
+  db <- vector("list", length = n_layers - 1)
+  
+  # Backpropagate the error through the layers
+  for (l in seq(n_layers - 1, 1, by = -1)) {
+    # Compute gradients for biases directly from dh of the next layer
+    db[[l]] <- dh[[l + 1]]
+    
+    # Compute gradients for weights as the outer product of dh and the activations from the current layer
+    dW[[l]] <- nn$h[[l]] %*% t(dh[[l + 1]])
+    
+    # Calculate dh for the previous layer, if not at the first layer
+    if (l > 1) {
+      dh[[l]] = 
+      ## should be something here  MISSING CODE HERE !!!
+    }
+  }
+  
+  # Store the gradients in the network list
+  nn$dW <- dW
+  nn$db <- db
+  nn$dh <- dh 
+  
+  return (nn)
 }
+
 
 train <- function(nn, inp, k, eta=0.1, mb=10, nstep=10000){
   # This function is used to train the network
