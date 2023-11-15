@@ -3,8 +3,7 @@
 # Jiapeng Ma: s2592596
 
 # Contributions:
-library(datasets)
-data(iris)
+
 
 # This file contains code to train a neural network for classification using
 # Stochastic Gradient  Descent as the optimisation method to update the 
@@ -71,7 +70,7 @@ forward <- function(nn, inp){
   # Perform the forward pass through the network
   for (l in 2:length(nn$h)) {
     # Compute the weighted sum of inputs and apply the ReLU activation function
-    nn$h[[l]] <- relu(nn$h[[l - 1]] %*% nn$W[[l - 1]] + nn$b[[l - 1]])
+    nn$h[[l]] <- relu(nn$W[[l - 1]] %*%  nn$h[[l - 1]] + nn$b[[l - 1]])
   }
   return (nn)
 }
@@ -137,11 +136,11 @@ train <- function(nn, inp, k, eta = 0.01, mb = 10, nstep = 10000) {
   # This function is used to train the network
   # Input:
   #   nn: the network
-  #   inp: input data in the rows of matrix
-  #   k: a vector with corresponding labels (1, 2, 3 . . . )
-  #   eta: the step size η 
-  #   mb: the number of data to randomly sample to compute the gradient. 
-  #   nstep: the number of optimization steps to take.
+  #   inp: input data
+  #   k: a vector with corresponding labels 
+  #   eta: the step size
+  #   mb: the number of data to randomly sample to compute the gradient
+  #   nstep: the number of optimization steps to take
   
 
   for (step in 1:nstep) {
@@ -195,11 +194,6 @@ train <- function(nn, inp, k, eta = 0.01, mb = 10, nstep = 10000) {
 }
   
 
-  
-
-  
-}
-
 # Train a 4-8-7-3 network to classify irises to species based on the 4 characteristics given in the iris dataset in R.
 # Divide the iris data into training data and test data, 
 # where the test data consists of every 5th row of the iris dataset, starting from row 5
@@ -217,21 +211,23 @@ list <- seq(5, nrow(iris), by = 5)
 test_data <- iris[list, ]
 train_data <- iris[-list,]
 
-inp = as.matrix(train_data[, 1:4])
-k = as.integer(train_data[, 5])
+inp <- as.matrix(train_data[, 1:4])
+k <- as.integer(train_data[, 5])
 
 
 
 # After training write code to classify the test data to species according to the class predicted as most probable for each iris in the test set
 # compute the misclassification rate (i.e. the proportion misclassified) for the test set.
-nn = netup(d)
-train = train(nn, inp, k)
-predicted_class = predict(train, test_data[, 1:4])
+nn <- netup(d)
+train <- train(nn, inp, k)
+predicted_class <- predict(train, test_data[, 1:4])
 
-misclassification_rate = sum(predicted_class != iris_test[, 5])/length(test_data[, 5])
+misclassification_rate <- sum(predicted_class != iris_test[, 5])/length(test_data[, 5])
 cat("Misclassification Rate:", misclassification_rate)
 
 
+
+f <- forward(nn, inp)
 
 
 
