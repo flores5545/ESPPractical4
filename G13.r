@@ -68,9 +68,9 @@ forward <- function(nn, inp){
   nn$h[[1]] <- inp # Set the value of the nodes in the first layer
   
   # Perform the forward pass through the network
-  for (l in 2:length(nn$h)) {
+  for (l in 1:(length(nn$h) - 1)) {
     # Compute the weighted sum of inputs and apply the ReLU activation function
-    nn$h[[l]] <- relu(nn$W[[l - 1]] %*%  nn$h[[l - 1]] + nn$b[[l - 1]])
+    nn$h[[l + 1]] <- relu(nn$W[[l]] %*%  nn$h[[l]] + nn$b[[l]])
   }
   return (nn)
 }
