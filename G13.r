@@ -62,7 +62,7 @@ forward <- function(nn, inp){
   # Output:
   #   return the updated network list (as the only return object)
   
-  nn$h[[1]] <- inp # Set the value of the nodes in the first layer
+  nn$h[[1]] <- matrix(inp, nrow=1, ncol=length(inp)) # Set the value of the nodes in the first layer
   # Perform the forward pass through the network
   for (l in 1:(length(nn$h) - 1)) {
     # Compute the weighted sum of inputs and apply the ReLU activation function
@@ -74,6 +74,8 @@ forward <- function(nn, inp){
 
 
 backward <- function(nn, k) {
+  print('layers h')
+  print(nn$h)
   # This function computes the derivatives of the loss function corresponding to
   # output class k for network nn (returned from forward)
   # Input:
@@ -104,20 +106,25 @@ backward <- function(nn, k) {
   
   # Perform the backward pass through the network
   for (l in seq(n_layers - 1, 1, by = -1)) {
-    print(dh[[l + 1]])
+    print(t(nn$h[[l]]))
     # Recall that ReLU was used as the activation function
     # Compute derivatives with respect to biases directly from dh of the next layer
     db[[l]] <- dh[[l + 1]]
-    db[[l]][nn$h[[l]] <= 0] <- 0  
+    db[[l]][nn$h[[l + 1]] <= 0] <- 0  
     
+
     # Compute gradients for weights as the outer product of dh of the next layer
     # and the node values from the current layer
     dW[[l]] <- t(nn$h[[l]]) %*% dh[[l + 1]]   
-    dW[[l]][nn$h[[l]] <= 0] <- 0
+    dW[[l]][nn$h[[l + 1]] <= 0] <- 0
     
+    print('dw')
+    print(dW)
     # Update dh for the previous layer using the chain rule
     dh[[l]] <- dh[[l + 1]] %*% t(nn$W[[l]])
-    dh[[l]][nn$h[[l]] <= 0] <- 0
+    dh[[l]][nn$h[[l + 1]] <= 0] <- 0
+    print('dh')
+    print(dh)
   }
   
   # Store the derivatives in the network list
@@ -139,6 +146,7 @@ train <- function(nn, inp, k, eta = 0.01, mb = 10, nstep = 10000) {
   #   mb: the number of data to randomly sample to compute the gradient
   #   nstep: the number of optimization steps to take
   
+  len <- length(nn$W)
 
   for (step in 1:nstep) {
     # Sample a minibatch
@@ -147,15 +155,12 @@ train <- function(nn, inp, k, eta = 0.01, mb = 10, nstep = 10000) {
     K_mb <- k[idx]
     
     # Initialize gradients
-    gradients_W <- vector("list", length = length(nn$W))
-    gradients_b <- vector("list", length = length(nn$b))
+    gradients_W <- vector("list", length = len)
+    gradients_b <- vector("list", length = len)
     
     # Loop over each layer to initialize gradients
-    for (l in 1:length(gradients_W)) {
+    for (l in 1:len) {
       gradients_W[[l]] <- matrix(0, nrow = nrow(nn$W[[l]]), ncol = ncol(nn$W[[l]]))
-    }
-    
-    for (l in 1:length(gradients_b)) {
       gradients_b[[l]] <- matrix(0, nrow = length(nn$b[[l]]), ncol = 1)
     }
 
@@ -190,11 +195,12 @@ train <- function(nn, inp, k, eta = 0.01, mb = 10, nstep = 10000) {
   return(nn)
 }
 
-# Train a 4-8-7-3 network to classify irises to species based on the 4 characteristics given in the iris dataset in R.
-# Divide the iris data into training data and test data, 
-# where the test data consists of every 5th row of the iris dataset, starting from row 5
-# set the seed to provide an example in which training has worked and the loss has been substantially reduced from pre- to post-training
-#
+# Now, we use the previously defined functions to train a 4-8-7-3 network to 
+# classify irises to species based on the 4 characteristics given in the iris 
+# dataset in R. To do so, we divide the iris data into training data and test data, 
+# where the test data consists of every 5th row of the iris dataset.
+# We set the seed to provide an example in which training has worked and the loss
+# has been substantially reduced from pre- to post-training
 
 d <- c(4, 8, 7, 3)
 library(datasets)
@@ -206,14 +212,15 @@ list <- seq(5, nrow(iris), by = 5)
 test_data <- iris[list, ]
 train_data <- iris[-list,]
 
-inp <- as.matrix(train_data[, 1:4])
-k <- as.integer(train_data[, 5])
+inp <- as.matrix(train_data[, 1:4]) # Input data for the neural network
+k <- as.integer(train_data[, 5]) # Different classes of iris
 
 
 
 # After training write code to classify the test data to species according to the class predicted as most probable for each iris in the test set
 # compute the misclassification rate (i.e. the proportion misclassified) for the test set.
 nn <- netup(d)
+
 train <- train(nn, inp, k)
 predicted_class <- predict(train, test_data[, 1:4])
 
