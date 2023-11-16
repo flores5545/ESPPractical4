@@ -142,7 +142,7 @@ train <- function(nn, inp, k, eta = 0.01, mb = 10, nstep = 10000) {
 
   for (step in 1:nstep) {
     # Sample a minibatch
-    idx <- sample(1:nrow(inp), mb, replace = TRUE)
+    idx <- sample(1:nrow(inp), mb, replace = FALSE)
     X_mb <- inp[idx, ]
     K_mb <- k[idx]
     
