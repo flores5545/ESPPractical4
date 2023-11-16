@@ -69,11 +69,10 @@ forward <- function(nn, inp){
   #   return the updated network list (as the only return object)
   # Set the value of the nodes in the first layer
   
-  for (i in 1:dim(inp)[2]){
-    nn$h[[1]][[i]] <- inp[,i]
-  }
-  print(nn$h[[1]])
-
+  nn$h[1] <- list(inp)
+  
+  print(nn$h[1])
+  print(unlist(nn$h[1]))
   # Perform the forward pass through the network
   for (l in 1:(length(nn$h) - 1)) {
     # Compute the weighted sum of inputs and apply the ReLU activation function
