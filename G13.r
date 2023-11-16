@@ -2,18 +2,20 @@
 # Chenning Jin: s2499193
 # Jiapeng Ma: s2592596
 
+# GitHub repo: https://github.com/flores5545/ESPPractical4
+
 # Contributions:
 
 
-# This file contains code to train a neural network for classification using
-# Stochastic Gradient  Descent as the optimisation method to update the 
-# hyperparameters of the network. First, we write a function to represent a  
-# neural network given a vector with the length of each layer. Then, we code a 
-# function to perform a forward pass of the neural network, updating the value 
-# of each node according to some given input, using the ReLU activation function
-# as the nonlinearity. Moreover, we implement a function to perform a backward 
-# pass of the neural network, where we compute the derivatives of the loss
-# function. For this project, we use the Softmax function to compute the 
+# This file contains code to train a fully-connected neural network for
+# classification using Stochastic Gradient  Descent as the optimisation method  
+# to update the hyperparameters of the network. First, we write a function to  
+# represent a neural network given a vector with the length of each layer. Then, 
+# we code a function to perform a forward pass of the neural network, updating
+# the value of each node according to some given input, using the ReLU activation 
+# function as the nonlinearity. Moreover, we implement a function to perform a  
+# backward pass of the neural network, where we compute the derivatives of the 
+# loss function. For this project, we use the Softmax function to compute the 
 # probability that the output variable is in a given class, and the 
 # cross-entropy loss function, as often used in classification problems
 
@@ -54,6 +56,7 @@ netup <- function(d){
 # ReLU activation function
 relu <- function(x) {
   return(pmax(0, x))
+  
 }
 
 forward <- function(nn, inp){
@@ -64,16 +67,18 @@ forward <- function(nn, inp){
   #   inp a vector of input values for the first layer
   # Output:
   #   return the updated network list (as the only return object)
-  
   # Set the value of the nodes in the first layer
-  nn$h[[1]] <- lapply(1:length(nn$h[[1]]), function(i) {
-    as.matrix(inp[, i])
-  })
+  
+  for (i in 1:dim(inp)[2]){
+    nn$h[[1]][[i]] <- inp[,i]
+  }
+  print(nn$h[[1]])
 
   # Perform the forward pass through the network
   for (l in 1:(length(nn$h) - 1)) {
     # Compute the weighted sum of inputs and apply the ReLU activation function
-    nn$h[[l + 1]] <- relu(nn$W[[l]] %*%  nn$h[[l]] + nn$b[[l]])
+    print('got here')
+    nn$h[l + 1] <- unlist(nn$W[[l]]) %*% unlist(nn$h[[l]]) + nn$b[l]
   }
   return (nn)
 }
@@ -198,7 +203,7 @@ train <- function(nn, inp, k, eta = 0.01, mb = 10, nstep = 10000) {
   return(nn)
 }
   
-
+((1) (0000000))
 # Train a 4-8-7-3 network to classify irises to species based on the 4 characteristics given in the iris dataset in R.
 # Divide the iris data into training data and test data, 
 # where the test data consists of every 5th row of the iris dataset, starting from row 5
@@ -209,7 +214,6 @@ d <- c(4, 8, 7, 3)
 library(datasets)
 data(iris) 
 
-iris_matrix <- as.matrix(iris)
 
 # Divide the iris data into training and testing data
 list <- seq(5, nrow(iris), by = 5)
