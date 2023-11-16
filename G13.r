@@ -53,12 +53,6 @@ netup <- function(d){
   return (nn)
 }
 
-# ReLU activation function
-relu <- function(x) {
-  return(pmax(0, x))
-  
-}
-
 forward <- function(nn, inp){
   # This function computes the remaining node values implied by the given input
   # and returns the updated network list 
@@ -67,22 +61,16 @@ forward <- function(nn, inp){
   #   inp a vector of input values for the first layer
   # Output:
   #   return the updated network list (as the only return object)
-  # Set the value of the nodes in the first layer
   
-  nn$h[1] <- list(inp)
-  
-  print(nn$h[1])
-  print(unlist(nn$h[1]))
+  nn$h[[1]] <- inp # Set the value of the nodes in the first layer
   # Perform the forward pass through the network
   for (l in 1:(length(nn$h) - 1)) {
     # Compute the weighted sum of inputs and apply the ReLU activation function
-    print('got here')
-    nn$h[l + 1] <- unlist(nn$W[[l]]) %*% unlist(nn$h[[l]]) + nn$b[l]
+    nn$h[[l + 1]] <- nn$h[[l]] %*% nn$W[[l]] + nn$b[[l]]
+    nn$h[[l+1]][nn$h[[l+1]] <= 0] <- 0  
   }
   return (nn)
 }
-
-f <- forward(nn, inp)
 
 
 backward <- function(nn, k) {
@@ -110,13 +98,13 @@ backward <- function(nn, k) {
   dh[[n_layers]] <- probabilities
   dh[[n_layers]][k] <- dh[[n_layers]][k] - 1  # Subtract 1 only from the true class k
   
-  # Initialize the derivative of the loss w.r.t weights and biases
+  # Initialize the derivative of the loss w.r.t. weights and biases
   dW <- vector("list", length = n_layers - 1)
   db <- vector("list", length = n_layers - 1)
   
   # Perform the backward pass through the network
   for (l in seq(n_layers - 1, 1, by = -1)) {
-    
+    print(dh[[l + 1]])
     # Recall that ReLU was used as the activation function
     # Compute derivatives with respect to biases directly from dh of the next layer
     db[[l]] <- dh[[l + 1]]
@@ -124,11 +112,11 @@ backward <- function(nn, k) {
     
     # Compute gradients for weights as the outer product of dh of the next layer
     # and the node values from the current layer
-    dW[[l]] <- dh[[l + 1]] %*% t(nn$h[[l]]) 
+    dW[[l]] <- t(nn$h[[l]]) %*% dh[[l + 1]]   
     dW[[l]][nn$h[[l]] <= 0] <- 0
-
+    
     # Update dh for the previous layer using the chain rule
-    dh[[l]] <- t(nn$W[[l]]) %*% dh[[l + 1]]
+    dh[[l]] <- dh[[l + 1]] %*% t(nn$W[[l]])
     dh[[l]][nn$h[[l]] <= 0] <- 0
   }
   
@@ -201,8 +189,7 @@ train <- function(nn, inp, k, eta = 0.01, mb = 10, nstep = 10000) {
   
   return(nn)
 }
-  
-((1) (0000000))
+
 # Train a 4-8-7-3 network to classify irises to species based on the 4 characteristics given in the iris dataset in R.
 # Divide the iris data into training data and test data, 
 # where the test data consists of every 5th row of the iris dataset, starting from row 5
@@ -227,6 +214,8 @@ k <- as.integer(train_data[, 5])
 # After training write code to classify the test data to species according to the class predicted as most probable for each iris in the test set
 # compute the misclassification rate (i.e. the proportion misclassified) for the test set.
 nn <- netup(d)
+nn <- forward(nn, inp)
+nn <- backward(nn, k)
 train <- train(nn, inp, k)
 predicted_class <- predict(train, test_data[, 1:4])
 
