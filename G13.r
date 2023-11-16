@@ -65,8 +65,11 @@ forward <- function(nn, inp){
   # Output:
   #   return the updated network list (as the only return object)
   
-  nn$h[[1]] <- inp # Set the value of the nodes in the first layer
-  
+  # Set the value of the nodes in the first layer
+  nn$h[[1]] <- lapply(1:length(nn$h[[1]]), function(i) {
+    as.matrix(inp[, i])
+  })
+
   # Perform the forward pass through the network
   for (l in 1:(length(nn$h) - 1)) {
     # Compute the weighted sum of inputs and apply the ReLU activation function
@@ -74,6 +77,8 @@ forward <- function(nn, inp){
   }
   return (nn)
 }
+
+f <- forward(nn, inp)
 
 
 backward <- function(nn, k) {
@@ -101,7 +106,7 @@ backward <- function(nn, k) {
   dh[[n_layers]] <- probabilities
   dh[[n_layers]][k] <- dh[[n_layers]][k] - 1  # Subtract 1 only from the true class k
   
-  # Initialize the derivative of the loss w.r.t. weights and biases
+  # Initialize the derivative of the loss w.r.t weights and biases
   dW <- vector("list", length = n_layers - 1)
   db <- vector("list", length = n_layers - 1)
   
@@ -227,7 +232,7 @@ cat("Misclassification Rate:", misclassification_rate)
 
 
 
-f <- forward(nn, inp)
+
 
 
 
