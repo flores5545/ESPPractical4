@@ -74,8 +74,6 @@ forward <- function(nn, inp){
 
 
 backward <- function(nn, k) {
-  print('layers h')
-  print(nn$h)
   # This function computes the derivatives of the loss function corresponding to
   # output class k for network nn (returned from forward)
   # Input:
@@ -106,27 +104,18 @@ backward <- function(nn, k) {
   
   # Perform the backward pass through the network
   for (l in seq(n_layers - 1, 1, by = -1)) {
-    print(t(nn$h[[l]]))
     # Recall that ReLU was used as the activation function
     # Compute derivatives with respect to biases directly from dh of the next layer
     db[[l]] <- dh[[l + 1]]
-    db[[l]][nn$h[[l + 1]] <= 0] <- 0  
-    
 
     # Compute gradients for weights as the outer product of dh of the next layer
     # and the node values from the current layer
     dW[[l]] <- t(nn$h[[l]]) %*% dh[[l + 1]]   
-    dW[[l]][nn$h[[l + 1]] <= 0] <- 0
     
-    print('dw')
-    print(dW)
     # Update dh for the previous layer using the chain rule
     dh[[l]] <- dh[[l + 1]] %*% t(nn$W[[l]])
-    dh[[l]][nn$h[[l + 1]] <= 0] <- 0
-    print('dh')
-    print(dh)
   }
-  
+
   # Store the derivatives in the network list
   nn$dW <- dW
   nn$db <- db
@@ -161,15 +150,14 @@ train <- function(nn, inp, k, eta = 0.01, mb = 10, nstep = 10000) {
     # Loop over each layer to initialize gradients
     for (l in 1:len) {
       gradients_W[[l]] <- matrix(0, nrow = nrow(nn$W[[l]]), ncol = ncol(nn$W[[l]]))
-      gradients_b[[l]] <- matrix(0, nrow = length(nn$b[[l]]), ncol = 1)
+      gradients_b[[l]] <- matrix(0, nrow = 1, ncol = length(nn$b[[l]]))
     }
-
     
     # Accumulate gradients over the minibatch
     for (i in 1:mb) {
       # Forward pass
       nn <- forward(nn, X_mb[i, ])
-      
+
       # Backward pass
       nn <- backward(nn, K_mb[i])
       
