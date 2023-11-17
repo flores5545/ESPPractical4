@@ -60,9 +60,9 @@ forward <- function(nn, inp){
   #   nn is a network list as returned by netup
   #   inp a vector of input values for the first layer
   # Output:
-  #   return the updated network list (as the only return object)
-  
-  nn$h[[1]] <- matrix(inp, nrow=1, ncol=length(inp)) # Set the value of the nodes in the first layer
+  #   return the updated network list
+
+  nn$h[[1]] <- matrix(inp, nrow=1) # Set the value of the nodes in the first layer
   # Perform the forward pass through the network
   for (l in 1:(length(nn$h) - 1)) {
     # Compute the weighted sum of inputs and apply the ReLU activation function
@@ -80,9 +80,9 @@ backward <- function(nn, k) {
   #   nn: network, returned from forward
   #   k: output class
   # Output:
-  #   A list of updated list including:
-  #     dh, dW and db, which are the derivatives w.r.t the nodes, weights and 
-  #     offsets, respectively
+  #   return the updated network list, now including dh, dW and db, which
+  #   are the derivatives of the loss w.r.t the nodes, weights and 
+  #   offsets, respectively
   
   # Number of layers
   n_layers <- length(nn$h)
@@ -134,6 +134,8 @@ train <- function(nn, inp, k, eta = 0.01, mb = 10, nstep = 10000) {
   #   eta: the step size
   #   mb: the number of data to randomly sample to compute the gradient
   #   nstep: the number of optimization steps to take
+  # Output:
+  #   return the trained neural network with updated parameters
   
   len <- length(nn$W)
 
@@ -200,19 +202,34 @@ list <- seq(5, nrow(iris), by = 5)
 test_data <- iris[list, ]
 train_data <- iris[-list,]
 
-inp <- as.matrix(train_data[, 1:4]) # Input data for the neural network
+training_input <- as.matrix(train_data[, 1:4]) # Input data for the neural network
 k <- as.integer(train_data[, 5]) # Different classes of iris
 
 
-
-# After training write code to classify the test data to species according to the class predicted as most probable for each iris in the test set
-# compute the misclassification rate (i.e. the proportion misclassified) for the test set.
+# Now, we classify the test data to species according to the class predicted as 
+# most probable for each iris in the test set
 nn <- netup(d)
 
-train <- train(nn, inp, k)
-predicted_class <- predict(train, test_data[, 1:4])
+trained_nn <- train(nn, training_input, k)
+testing_input <- as.matrix(test_data[, 1:4]) # Input data for the neural network
 
-misclassification_rate <- sum(predicted_class != test_data[, 5])/length(test_data[, 5])
+classify <- function(nn, inp){
+  nn <- forward(nn, inp)
+  # Compute the probabilities for the last layer
+  logits <- nn$h[[length(nn$h)]]
+  exp_logits <- exp(logits)
+  sum_exp_logits <- sum(exp_logits)
+  probabilities <- exp_logits / sum_exp_logits
+  return(which.max(probabilities))
+}
+predicted_class <- vector("list", length = nrow(testing_input))
+for(i in 1:nrow(testing_input)){
+  predicted_class[[i]] <- classify(trained_nn, testing_input[i, ])
+}
+
+# Compute the misclassification rate for the test set
+
+misclassification_rate <- sum(predicted_class != as.integer(test_data[, 5]))/length(test_data[, 5])
 cat("Misclassification Rate:", misclassification_rate)
 
 
