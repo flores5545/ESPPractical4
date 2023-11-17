@@ -138,7 +138,7 @@ backward <- function(nn, k) {
 }
 
 
-train <- function(nn, inp, k, eta = 0.008, mb = 10, nstep = 12000) {
+train <- function(nn, inp, k, eta = 0.008, mb = 10, nstep = 15000) {
   # This function is used to train the network
   # Input:
   #   nn: the network
@@ -219,7 +219,7 @@ k <- as.integer(train_data[, 5]) # Different classes of iris
 # example in which training has worked and the loss has been substantially 
 # reduced by training our neural network
 
-#set.seed()
+set.seed(66)
 nn <- netup(d) # Set up neural network
 
 trained_nn <- train(nn, training_input, k) # Train the neural network
