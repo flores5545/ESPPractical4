@@ -4,11 +4,12 @@
 
 # GitHub repo: https://github.com/flores5545/ESPPractical4
 
-# Contributions:
+# Contributions: All 3 members worked together on every task, so the amount of 
+# work each member put into this project is roughly equal
 
 
-# This file contains code to train a fully-connected neural network for
-# classification using Stochastic Gradient  Descent as the optimisation method  
+# This project aims to train a fully-connected neural network for
+# classification using Stochastic Gradient Descent as the optimisation method  
 # to update the hyperparameters of the network. First, we write a function to  
 # represent a neural network given a vector with the length of each layer. Then, 
 # we code a function to perform a forward pass of the neural network, updating
@@ -18,6 +19,7 @@
 # loss function. For this project, we use the Softmax function to compute the 
 # probability that the output variable is in a given class, and the 
 # cross-entropy loss function, as often used in classification problems
+
 
 
 netup <- function(d){
@@ -33,7 +35,7 @@ netup <- function(d){
   #     b: a list of offset vectors. b[[l]] is the offset vector linking layer l  
   #      to layer l+1. Initialize the elements with U(0, 0.2) random deviates
   
-  # Initialize the nodes, weights, and offset vector
+  # Initialize the nodes, weights, and offset vectors
   h <- vector("list", length = length(d))
   W <- vector("list", length = length(d) - 1)
   b <- vector("list", length = length(d) - 1)
@@ -63,6 +65,7 @@ forward <- function(nn, inp){
   #   return the updated network list
 
   nn$h[[1]] <- matrix(inp, nrow=1) # Set the value of the nodes in the first layer
+  
   # Perform the forward pass through the network
   for (l in 1:(length(nn$h) - 1)) {
     # Compute the weighted sum of inputs and apply the ReLU activation function
@@ -72,6 +75,18 @@ forward <- function(nn, inp){
   return (nn)
 }
 
+softmax <- function(nn){
+  # This function computes the probabilities using the softmax function
+  # Input:
+  #   nn: the network
+  # Output:
+  #   return the probabilities 
+  logits <- nn$h[[length(nn$h)]]
+  exp_logits <- exp(logits)
+  sum_exp_logits <- sum(exp_logits)
+  probabilities <- exp_logits / sum_exp_logits
+  return(probabilities)
+}
 
 backward <- function(nn, k) {
   # This function computes the derivatives of the loss function corresponding to
@@ -88,31 +103,29 @@ backward <- function(nn, k) {
   n_layers <- length(nn$h)
   
   # Compute the probabilities for the last layer
-  logits <- nn$h[[n_layers]]
-  exp_logits <- exp(logits)
-  sum_exp_logits <- sum(exp_logits)
-  probabilities <- exp_logits / sum_exp_logits
+  probabilities <- softmax(nn)
   
-  # Initialize dh for the last layer L
+  # Initialize the derivative of the loss w.r.t. the nodes
   dh <- vector("list", length = n_layers)
+  
+  # Update the derivative of the loss w.r.t. the nodes for the last layer
   dh[[n_layers]] <- probabilities
   dh[[n_layers]][k] <- dh[[n_layers]][k] - 1  # Subtract 1 only from the true class k
   
-  # Initialize the derivative of the loss w.r.t. weights and biases
+  # Initialize the derivative of the loss w.r.t weights and biases
   dW <- vector("list", length = n_layers - 1)
   db <- vector("list", length = n_layers - 1)
   
   # Perform the backward pass through the network
   for (l in seq(n_layers - 1, 1, by = -1)) {
-    # Recall that ReLU was used as the activation function
-    # Compute derivatives with respect to biases directly from dh of the next layer
+    # Compute derivatives w.r.t to biases directly from dh of the next layer
     db[[l]] <- dh[[l + 1]]
 
-    # Compute gradients for weights as the outer product of dh of the next layer
-    # and the node values from the current layer
+    # Compute derivatives for weights as the outer product of dh of the next 
+    # layer and the node values from the current layer
     dW[[l]] <- t(nn$h[[l]]) %*% dh[[l + 1]]   
     
-    # Update dh for the previous layer using the chain rule
+    # Update dh for the current layer using dh of the next layer and the chain rule
     dh[[l]] <- dh[[l + 1]] %*% t(nn$W[[l]])
   }
 
@@ -125,7 +138,7 @@ backward <- function(nn, k) {
 }
 
 
-train <- function(nn, inp, k, eta = 0.01, mb = 10, nstep = 10000) {
+train <- function(nn, inp, k, eta = 0.008, mb = 10, nstep = 12000) {
   # This function is used to train the network
   # Input:
   #   nn: the network
@@ -137,13 +150,15 @@ train <- function(nn, inp, k, eta = 0.01, mb = 10, nstep = 10000) {
   # Output:
   #   return the trained neural network with updated parameters
   
-  len <- length(nn$W)
+  len <- length(nn$W) # Length of the weights and offsets
 
-  for (step in 1:nstep) {
+  for (step in 1:nstep) { # Perform stochastic gradient descent for the given
+    # number of steps
+    
     # Sample a minibatch
     idx <- sample(1:nrow(inp), mb, replace = FALSE)
-    X_mb <- inp[idx, ]
-    K_mb <- k[idx]
+    X_mb <- inp[idx, ] # Inputs from the current minibatch
+    K_mb <- k[idx] # Labels from the current minibatch
     
     # Initialize gradients
     gradients_W <- vector("list", length = len)
@@ -170,18 +185,13 @@ train <- function(nn, inp, k, eta = 0.01, mb = 10, nstep = 10000) {
       }
     }
     
-    # Update weights and biases
+    # Update the dervatives of weights and biases by taking a step in the 
+    # direction of the negative average gradients, the direction of maximum descent
     for (l in 1:length(nn$W)) {
       nn$W[[l]] <- nn$W[[l]] - eta * (1/mb) * gradients_W[[l]]
       nn$b[[l]] <- nn$b[[l]] - eta * (1/mb) * gradients_b[[l]]
     }
-    
-    # print out the loss to monitor training every few steps
-    if (step %% 1000 == 0) {
-      
-    }
   }
-  
   return(nn)
 }
 
@@ -189,8 +199,6 @@ train <- function(nn, inp, k, eta = 0.01, mb = 10, nstep = 10000) {
 # classify irises to species based on the 4 characteristics given in the iris 
 # dataset in R. To do so, we divide the iris data into training data and test data, 
 # where the test data consists of every 5th row of the iris dataset.
-# We set the seed to provide an example in which training has worked and the loss
-# has been substantially reduced from pre- to post-training
 
 d <- c(4, 8, 7, 3)
 library(datasets)
@@ -207,29 +215,44 @@ k <- as.integer(train_data[, 5]) # Different classes of iris
 
 
 # Now, we classify the test data to species according to the class predicted as 
-# most probable for each iris in the test set
-nn <- netup(d)
+# most probable for each iris in the test set. We set the seed to provide an
+# example in which training has worked and the loss has been substantially 
+# reduced by training our neural network
 
-trained_nn <- train(nn, training_input, k)
+#set.seed()
+nn <- netup(d) # Set up neural network
+
+trained_nn <- train(nn, training_input, k) # Train the neural network
 testing_input <- as.matrix(test_data[, 1:4]) # Input data for the neural network
 
+
 classify <- function(nn, inp){
-  nn <- forward(nn, inp)
+  # This function carries out the classification
+  # Input:
+  #   nn: the network
+  #   inp: input data
+  # Output:
+  #   return the class predicted as most probable for each iris in the test set
+  
+  nn <- forward(nn, inp) # Perform a forward pass
+  
   # Compute the probabilities for the last layer
-  logits <- nn$h[[length(nn$h)]]
-  exp_logits <- exp(logits)
-  sum_exp_logits <- sum(exp_logits)
-  probabilities <- exp_logits / sum_exp_logits
+  probabilities <- softmax(nn)
+  # Return the index with the highest probability
   return(which.max(probabilities))
 }
+# Initialize the vector with the predicted classes
 predicted_class <- vector("list", length = nrow(testing_input))
-for(i in 1:nrow(testing_input)){
+
+for(i in 1:nrow(testing_input)){ # Loop over the rows of the test data
+  # Update the predicted classes according to the output of the classify function
   predicted_class[[i]] <- classify(trained_nn, testing_input[i, ])
 }
 
-# Compute the misclassification rate for the test set
-
-misclassification_rate <- sum(predicted_class != as.integer(test_data[, 5]))/length(test_data[, 5])
+# Compute the misclassification rate for the test set, the proportion
+#  misclassified, for the test set
+misclassification_rate <- sum(predicted_class != as.integer(test_data[, 5]))/
+  length(test_data[, 5])
 cat("Misclassification Rate:", misclassification_rate)
 
 
