@@ -212,7 +212,7 @@ nn <- netup(d)
 train <- train(nn, inp, k)
 predicted_class <- predict(train, test_data[, 1:4])
 
-misclassification_rate <- sum(predicted_class != iris_test[, 5])/length(test_data[, 5])
+misclassification_rate <- sum(predicted_class != test_data[, 5])/length(test_data[, 5])
 cat("Misclassification Rate:", misclassification_rate)
 
 
