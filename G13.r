@@ -219,7 +219,7 @@ k <- as.integer(train_data[, 5]) # Different classes of iris
 # example in which training has worked and the loss has been substantially 
 # reduced by training our neural network
 
-set.seed(66)
+set.seed(660)
 nn <- netup(d) # Set up neural network
 
 trained_nn <- train(nn, training_input, k) # Train the neural network
